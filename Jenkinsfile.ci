@@ -16,6 +16,17 @@ pipeline {
             }
         }
 
+        // ✅ Nouvelle étape de debug pour vérifier Node.js et npm
+        stage('Check Node + NPM') {
+            steps {
+                sh 'echo $PATH'
+                sh 'node -v'
+                sh 'npm -v'
+                sh 'which node'
+                sh 'which npm'
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 dir('backend') {
