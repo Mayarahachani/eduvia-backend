@@ -1,0 +1,9 @@
+node_modules
+coverage
+dist
+uploads
+*.log
+
+.git
+.gitignore
+.vscode
