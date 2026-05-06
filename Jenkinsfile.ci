@@ -6,7 +6,8 @@ pipeline {
     }
 
     environment {
-        SONARQUBE = 'SonarQube'
+        SONARQUBE = 'SonarQube'                    // Nom du serveur SonarQube dans Jenkins
+        SONAR_TOKEN = credentials('sonarqube-token') // Ton token Jenkins pour SonarQube
     }
 
     stages {
@@ -28,7 +29,7 @@ pipeline {
             }
         }
 
-        // Installer les dépendances dans le PATH corrigé
+        // Installer les dépendances
         stage('Install Dependencies') {
             steps {
                 dir('backend') {
@@ -68,7 +69,13 @@ pipeline {
             steps {
                 dir('backend') {
                     withSonarQubeEnv("${SONARQUBE}") {
-                        sh 'sonar-scanner'
+                        sh """
+                        sonar-scanner \
+                          -Dsonar.login=${SONAR_TOKEN} \
+                          -Dsonar.projectKey=EduviaBackend \
+                          -Dsonar.projectName=EduviaBackend \
+                          -Dsonar.sources=.
+                        """
                     }
                 }
             }
