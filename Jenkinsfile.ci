@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node22'
-        sonarRunner 'SonarScanner'  // <-- Utiliser sonarRunner au lieu de sonarQubeScanner
+        nodejs 'node22'  // Doit correspondre au nom exact dans Global Tool Configuration
     }
 
     environment {
-        SONARQUBE = 'SonarQube'
+        SONARQUBE = 'SonarQube'                    // Nom de ton serveur SonarQube dans Jenkins
         SONAR_TOKEN = credentials('sonarqube-token') // ID du token Jenkins
     }
 
@@ -20,8 +19,8 @@ pipeline {
 
         stage('Check Node + NPM') {
             steps {
-                sh 'node -v || echo "node not found"'
-                sh 'npm -v || echo "npm not found"'
+                sh 'node -v'
+                sh 'npm -v'
             }
         }
 
@@ -52,8 +51,9 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('backend') {
+                    // Utilise le chemin complet de SonarScanner installé dans WSL
                     withSonarQubeEnv("${SONARQUBE}") {
-                        sh "sonar-scanner -Dsonar.login=${SONAR_TOKEN}"
+                        sh "/opt/sonar-scanner/bin/sonar-scanner -Dsonar.login=${SONAR_TOKEN}"
                     }
                 }
             }
@@ -62,10 +62,11 @@ pipeline {
 
     post {
         success {
+            echo 'CI Backend terminé avec succès. Déclenchement du CD.'
             build job: 'CD-BACKEND', wait: false
         }
         failure {
-            echo 'CI Backend failed. CD Backend will not start.'
+            echo 'CI Backend échoué. CD Backend non déclenché.'
         }
     }
 }
