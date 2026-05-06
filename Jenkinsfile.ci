@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        SONARQUBE = 'SonarQube'                     // Nom exact de ton serveur SonarQube
+        SONARQUBE = 'SonarQubee'                     // Nom exact de ton serveur SonarQube
         SONAR_TOKEN = credentials('sonarqube-token') // ID du token Jenkins
     }
 
