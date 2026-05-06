@@ -2,61 +2,59 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node22' // correspond à ton installation NodeJS dans Jenkins
+        nodejs 'node22'
     }
 
     environment {
-        SONARQUBE = 'SonarQube'                 // Nom du serveur SonarQube dans Jenkins
-        SONAR_TOKEN = credentials('sonarqube-token') // Token Jenkins pour SonarQube
+        SONARQUBE = 'SonarQube'                // Nom exact configuré dans Jenkins
+        SONAR_TOKEN = credentials('sonarqube-token') // Token Jenkins configuré
     }
 
     stages {
-        // Cloner le repo
         stage('Clone') {
             steps {
                 checkout scm
             }
         }
 
-        // ✅ Vérification Node + npm (debug)
         stage('Check Node + NPM') {
             steps {
                 sh 'echo $PATH'
                 sh 'node -v || echo "node not found"'
                 sh 'npm -v || echo "npm not found"'
-                sh 'which node || echo "node not in PATH"'
-                sh 'which npm || echo "npm not in PATH"'
             }
         }
 
-        // Installer les dépendances
         stage('Install Dependencies') {
             steps {
                 dir('backend') {
-                    sh 'npm install'
+                    withEnv(["PATH=/usr/bin:$PATH"]) {
+                        sh 'npm install'
+                    }
                 }
             }
         }
 
-        // Tests unitaires + coverage
         stage('Unit Tests + Coverage') {
             steps {
                 dir('backend') {
-                    sh 'npm run test:cov'
+                    withEnv(["PATH=/usr/bin:$PATH"]) {
+                        sh 'npm run test:cov'
+                    }
                 }
             }
         }
 
-        // Build backend
         stage('Build Backend') {
             steps {
                 dir('backend') {
-                    sh 'npm run build'
+                    withEnv(["PATH=/usr/bin:$PATH"]) {
+                        sh 'npm run build'
+                    }
                 }
             }
         }
 
-        // SonarQube analysis
         stage('SonarQube Analysis') {
             steps {
                 dir('backend') {
@@ -70,9 +68,9 @@ pipeline {
 
     post {
         success {
-            echo 'CI Backend succeeded.'
             build job: 'CD-BACKEND', wait: false
         }
+
         failure {
             echo 'CI Backend failed. CD Backend will not start.'
         }
