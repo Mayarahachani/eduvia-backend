@@ -13,11 +13,14 @@ pipeline {
     }
 
     stages {
-        stage('Clone') {
-            steps {
-                checkout scm
-            }
-        }
+
+     stage('Clone') {
+    steps {
+        // Pour HTTPS :
+        sh 'git clone https://github.com/Mayarahachani/eduvia-backend.git backend'
+        
+    }
+}
 
         stage('Check Node + NPM') {
             steps {
