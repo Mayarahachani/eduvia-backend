@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node22'  // Doit correspondre au nom exact dans Global Tool Configuration
+        nodejs 'node22' // Nom exact de Node.js configuré dans Jenkins
     }
 
     environment {
-        SONARQUBE = 'SonarQube'                    // Nom de ton serveur SonarQube dans Jenkins
+        SONARQUBE = 'SonarQube'                     // Nom exact de ton serveur SonarQube
         SONAR_TOKEN = credentials('sonarqube-token') // ID du token Jenkins
     }
 
@@ -26,7 +26,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                dir('backend') {
+                dir('frontend') {
                     sh 'npm install'
                 }
             }
@@ -34,26 +34,26 @@ pipeline {
 
         stage('Unit Tests + Coverage') {
             steps {
-                dir('backend') {
-                    sh 'npm run test:cov'
+                dir('frontend') {
+                    // Utiliser le script que tu as dans package.json pour CI
+                    sh 'npm run test:ci'
                 }
             }
         }
 
-        stage('Build Backend') {
+        stage('Build Frontend') {
             steps {
-                dir('backend') {
-                    sh 'npm run build'
+                dir('frontend') {
+                    sh 'npm run build -- --configuration production'
                 }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                dir('backend') {
-                    // Utilise le chemin complet de SonarScanner installé dans WSL
+                dir('frontend') {
                     withSonarQubeEnv("${SONARQUBE}") {
-                        sh "/opt/sonar-scanner/bin/sonar-scanner -Dsonar.login=${SONAR_TOKEN}"
+                        sh 'sonar-scanner'
                     }
                 }
             }
@@ -62,11 +62,11 @@ pipeline {
 
     post {
         success {
-            echo 'CI Backend terminé avec succès. Déclenchement du CD.'
-            build job: 'CD-BACKEND', wait: false
+            echo 'CI Frontend terminé avec succès. Déclenchement du CD.'
+            build job: 'CD-FRONTEND', wait: false
         }
         failure {
-            echo 'CI Backend échoué. CD Backend non déclenché.'
+            echo 'CI Frontend échoué. CD Frontend non déclenché.'
         }
     }
 }
