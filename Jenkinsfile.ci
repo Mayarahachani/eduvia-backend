@@ -3,13 +3,13 @@ pipeline {
 
     tools {
         nodejs 'node22'
-        // Nom de l'installation SonarQube Scanner définie dans Jenkins Global Tool Configuration
+        // Assurez-vous d’avoir défini SonarQube Scanner dans Global Tool Configuration
         sonarQubeScanner 'SonarScanner'
     }
 
     environment {
-        SONARQUBE = 'SonarQube'                        // Nom de ton serveur SonarQube dans Jenkins
-        SONAR_TOKEN = credentials('sonarqube-token')   // Token SonarQube stocké dans Jenkins Credentials
+        SONARQUBE = 'SonarQube'
+        SONAR_TOKEN = credentials('sonarqube-token') // ID du token Jenkins
     }
 
     stages {
@@ -53,10 +53,8 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('backend') {
-                    // On utilise withSonarQubeEnv pour injecter le serveur configuré
                     withSonarQubeEnv("${SONARQUBE}") {
-                        // Appel du scanner via le chemin global du binaire
-                        sh "${tool 'SonarScanner'}/bin/sonar-scanner -Dsonar.login=${SONAR_TOKEN}"
+                        sh "sonar-scanner -Dsonar.login=${SONAR_TOKEN}"
                     }
                 }
             }
@@ -65,7 +63,6 @@ pipeline {
 
     post {
         success {
-            // Déclenche le job de CD seulement si CI réussit
             build job: 'CD-BACKEND', wait: false
         }
         failure {
