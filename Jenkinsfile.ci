@@ -2,12 +2,12 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node22' // doit correspondre à ton installation NodeJS dans Jenkins
+        nodejs 'node22' // correspond à ton installation NodeJS dans Jenkins
     }
 
     environment {
-        SONARQUBE = 'SonarQube'                    // Nom du serveur SonarQube dans Jenkins
-        SONAR_TOKEN = credentials('sonarqube-token') // Ton token Jenkins pour SonarQube
+        SONARQUBE = 'SonarQube'                 // Nom du serveur SonarQube dans Jenkins
+        SONAR_TOKEN = credentials('sonarqube-token') // Token Jenkins pour SonarQube
     }
 
     stages {
@@ -33,11 +33,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('backend') {
-                    withEnv(["PATH=/usr/bin:$PATH"]) {
-                        sh 'node -v'
-                        sh 'npm -v'
-                        sh 'npm install'
-                    }
+                    sh 'npm install'
                 }
             }
         }
@@ -46,9 +42,7 @@ pipeline {
         stage('Unit Tests + Coverage') {
             steps {
                 dir('backend') {
-                    withEnv(["PATH=/usr/bin:$PATH"]) {
-                        sh 'npm run test:cov'
-                    }
+                    sh 'npm run test:cov'
                 }
             }
         }
@@ -57,9 +51,7 @@ pipeline {
         stage('Build Backend') {
             steps {
                 dir('backend') {
-                    withEnv(["PATH=/usr/bin:$PATH"]) {
-                        sh 'npm run build'
-                    }
+                    sh 'npm run build'
                 }
             }
         }
@@ -69,13 +61,7 @@ pipeline {
             steps {
                 dir('backend') {
                     withSonarQubeEnv("${SONARQUBE}") {
-                        sh """
-                        sonar-scanner \
-                          -Dsonar.login=${SONAR_TOKEN} \
-                          -Dsonar.projectKey=EduviaBackend \
-                          -Dsonar.projectName=EduviaBackend \
-                          -Dsonar.sources=.
-                        """
+                        sh "sonar-scanner -Dsonar.login=${SONAR_TOKEN}"
                     }
                 }
             }
@@ -84,9 +70,9 @@ pipeline {
 
     post {
         success {
+            echo 'CI Backend succeeded.'
             build job: 'CD-BACKEND', wait: false
         }
-
         failure {
             echo 'CI Backend failed. CD Backend will not start.'
         }
