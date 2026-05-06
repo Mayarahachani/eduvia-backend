@@ -49,15 +49,15 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
-            steps {
-                dir('frontend') {
-                    withSonarQubeEnv("${SONARQUBE}") {
-                        sh 'sonar-scanner'
-                    }
-                }
+       stage('SonarQube Analysis') {
+    steps {
+        dir('backend') {
+            withSonarQubeEnv('SonarQube') { // correspond exactement au "Nom" configuré dans Jenkins -> SonarQube servers
+                sh "/opt/sonar-scanner/bin/sonar-scanner -Dsonar.login=${SONAR_TOKEN}"
             }
         }
+    }
+}
     }
 
     post {
