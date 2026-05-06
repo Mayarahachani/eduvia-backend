@@ -3,8 +3,7 @@ pipeline {
 
     tools {
         nodejs 'node22'
-        // Assurez-vous d’avoir défini SonarQube Scanner dans Global Tool Configuration
-        sonarQubeScanner 'SonarScanner'
+        sonarRunner 'SonarScanner'  // <-- Utiliser sonarRunner au lieu de sonarQubeScanner
     }
 
     environment {
@@ -13,14 +12,11 @@ pipeline {
     }
 
     stages {
-
-     stage('Clone') {
-    steps {
-        // Pour HTTPS :
-        sh 'git clone https://github.com/Mayarahachani/eduvia-backend.git backend'
-        
-    }
-}
+        stage('Clone') {
+            steps {
+                checkout scm
+            }
+        }
 
         stage('Check Node + NPM') {
             steps {
