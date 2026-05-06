@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        nodejs 'node22'
+        nodejs 'node22' // doit correspondre à ton installation NodeJS dans Jenkins
     }
 
     environment {
@@ -10,47 +10,60 @@ pipeline {
     }
 
     stages {
+        // Cloner le repo
         stage('Clone') {
             steps {
                 checkout scm
             }
         }
 
-        // ✅ Nouvelle étape de debug pour vérifier Node.js et npm
+        // ✅ Vérification Node + npm (debug)
         stage('Check Node + NPM') {
             steps {
                 sh 'echo $PATH'
-                sh 'node -v'
-                sh 'npm -v'
-                sh 'which node'
-                sh 'which npm'
+                sh 'node -v || echo "node not found"'
+                sh 'npm -v || echo "npm not found"'
+                sh 'which node || echo "node not in PATH"'
+                sh 'which npm || echo "npm not in PATH"'
             }
         }
 
+        // Installer les dépendances dans le PATH corrigé
         stage('Install Dependencies') {
             steps {
                 dir('backend') {
-                    sh 'npm install'
+                    withEnv(["PATH=/usr/bin:$PATH"]) {
+                        sh 'node -v'
+                        sh 'npm -v'
+                        sh 'npm install'
+                    }
                 }
             }
         }
 
+        // Tests unitaires + coverage
         stage('Unit Tests + Coverage') {
             steps {
                 dir('backend') {
-                    sh 'npm run test:cov'
+                    withEnv(["PATH=/usr/bin:$PATH"]) {
+                        sh 'npm run test:cov'
+                    }
                 }
             }
         }
 
+        // Build backend
         stage('Build Backend') {
             steps {
                 dir('backend') {
-                    sh 'npm run build'
+                    withEnv(["PATH=/usr/bin:$PATH"]) {
+                        sh 'npm run build'
+                    }
                 }
             }
         }
 
+        // SonarQube analysis
         stage('SonarQube Analysis') {
             steps {
                 dir('backend') {
