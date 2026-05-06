@@ -1,72 +1,73 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'node22'
-        // Assurez-vous d’avoir défini SonarQube Scanner dans Global Tool Configuration
-        sonarQubeScanner 'SonarScanner'
-    }
-
     environment {
-        SONARQUBE = 'SonarQube'
-        SONAR_TOKEN = credentials('sonarqube-token') // ID du token Jenkins
+        SONAR_TOKEN = credentials('sonarqube-token') // Ton token stocké dans Jenkins Credentials
+        PATH = "/opt/sonar-scanner/bin:$PATH"       // Ajoute le binaire SonarScanner au PATH
     }
 
     stages {
-        stage('Clone') {
+        stage('Checkout SCM') {
             steps {
                 checkout scm
             }
         }
 
+        stage('Tool Install') {
+            steps {
+                // Ici si tu as des outils prédéfinis
+                echo 'Tools installed'
+            }
+        }
+
+        stage('Clone') {
+            steps {
+                sh 'git clone <URL_DE_TON_REPO>'
+            }
+        }
+
         stage('Check Node + NPM') {
             steps {
-                sh 'node -v || echo "node not found"'
-                sh 'npm -v || echo "npm not found"'
+                sh 'node -v'
+                sh 'npm -v'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                dir('backend') {
-                    sh 'npm install'
-                }
+                sh 'npm install'
             }
         }
 
         stage('Unit Tests + Coverage') {
             steps {
-                dir('backend') {
-                    sh 'npm run test:cov'
-                }
+                sh 'npm test -- --coverage'
             }
         }
 
         stage('Build Backend') {
             steps {
-                dir('backend') {
-                    sh 'npm run build'
-                }
+                sh 'npm run build'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                dir('backend') {
-                    withSonarQubeEnv("${SONARQUBE}") {
-                        sh "sonar-scanner -Dsonar.login=${SONAR_TOKEN}"
-                    }
-                }
+                // On utilise le chemin complet du sonar-scanner pour éviter le "command not found"
+                sh "/opt/sonar-scanner/bin/sonar-scanner -Dsonar.login=${SONAR_TOKEN}"
             }
         }
     }
 
     post {
-        success {
-            build job: 'CD-BACKEND', wait: false
+        always {
+            echo 'Pipeline terminé'
         }
         failure {
-            echo 'CI Backend failed. CD Backend will not start.'
+            echo 'Le pipeline a échoué'
+        }
+        success {
+            echo 'Pipeline réussi'
         }
     }
 }
