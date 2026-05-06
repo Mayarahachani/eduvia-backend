@@ -22,7 +22,7 @@ pipeline {
 
         stage('Clone') {
             steps {
-                sh 'git clone <URL_DE_TON_REPO>'
+                sh 'git clone https://github.com/Mayarahachani/eduvia-backend.git'
             }
         }
 
