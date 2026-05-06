@@ -6,9 +6,9 @@ pipeline {
     }
 
     environment {
-        SONARQUBE = 'SonarQube'                     // Nom exact de ton serveur SonarQube dans Jenkins
-        SONAR_TOKEN = credentials('SonarQube') // ID du token Jenkins
+        SONARQUBE = 'SonarQube'
     }
+
 
     stages {
         stage('Clone') {
