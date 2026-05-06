@@ -3,11 +3,13 @@ pipeline {
 
     tools {
         nodejs 'node22'
+        // Assurez-vous d’avoir défini SonarQube Scanner dans Global Tool Configuration
+        sonarQubeScanner 'SonarScanner'
     }
 
     environment {
-        SONARQUBE = 'SonarQube'                // Nom exact configuré dans Jenkins
-        SONAR_TOKEN = credentials('sonarqube-token') // Token Jenkins configuré
+        SONARQUBE = 'SonarQube'
+        SONAR_TOKEN = credentials('sonarqube-token') // ID du token Jenkins
     }
 
     stages {
@@ -19,7 +21,6 @@ pipeline {
 
         stage('Check Node + NPM') {
             steps {
-                sh 'echo $PATH'
                 sh 'node -v || echo "node not found"'
                 sh 'npm -v || echo "npm not found"'
             }
@@ -28,9 +29,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('backend') {
-                    withEnv(["PATH=/usr/bin:$PATH"]) {
-                        sh 'npm install'
-                    }
+                    sh 'npm install'
                 }
             }
         }
@@ -38,9 +37,7 @@ pipeline {
         stage('Unit Tests + Coverage') {
             steps {
                 dir('backend') {
-                    withEnv(["PATH=/usr/bin:$PATH"]) {
-                        sh 'npm run test:cov'
-                    }
+                    sh 'npm run test:cov'
                 }
             }
         }
@@ -48,9 +45,7 @@ pipeline {
         stage('Build Backend') {
             steps {
                 dir('backend') {
-                    withEnv(["PATH=/usr/bin:$PATH"]) {
-                        sh 'npm run build'
-                    }
+                    sh 'npm run build'
                 }
             }
         }
@@ -70,7 +65,6 @@ pipeline {
         success {
             build job: 'CD-BACKEND', wait: false
         }
-
         failure {
             echo 'CI Backend failed. CD Backend will not start.'
         }
