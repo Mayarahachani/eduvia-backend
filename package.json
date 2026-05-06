@@ -87,8 +87,4 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
-  "scripts": {
-  ...
-  "test:ci": "ng test --watch=false --coverage --browsers=ChromeHeadless"
-}
 }
