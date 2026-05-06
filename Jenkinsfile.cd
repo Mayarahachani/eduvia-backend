@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'ton-dockerhub/eduvia-backend'
+        IMAGE_NAME = 'mayarahachanipi/eduvia-backend'
         IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
@@ -19,7 +19,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-credentials',
+                    credentialsId: '21e7312b-66ff-46b2-9453-b06a01330b43',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
